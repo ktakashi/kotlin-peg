@@ -10,5 +10,18 @@ plugins {
     id("org.gradle.toolchains.foojay-resolver-convention") version "0.4.0"
 }
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("libs") {
+            version("kotlin", "1.9.0")
+            version("junit", "5.9.3")
+            library("kotlin-bom", "org.jetbrains.kotlin", "kotlin-bom").versionRef("kotlin")
+            library("junit-bom", "org.junit", "junit-bom").versionRef("junit")
+        }
+    }
+}
+
 rootProject.name = "kotlin-peg"
 include("parser-combinator")
+include("examples:csv-parser")
+

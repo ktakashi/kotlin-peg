@@ -9,10 +9,6 @@ class ExampleCsvTest {
     data class CsvFile(val header: Optional<List<String>>, val record: List<List<String>>)
     @Test
     fun csvParserTest() {
-        fun <T, U> debugPrint(r: Result<T, U>) {
-            println(r.next.toList())
-            println(r)
-        }
         // ANBF from https://datatracker.ietf.org/doc/html/rfc4180
         val cr = eq('\r')
         val lf = eq('\n')

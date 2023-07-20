@@ -16,7 +16,7 @@ typealias Parser<T, U> = (l: Sequence<T>) -> Result<T, U>
 typealias Binder<T, U0, U1> = (v: U0) -> Parser<T, U1>
 
 fun <T, U> result(v: U) = { next: Sequence<T> -> SuccessResult(v, next) }
-
+fun <T, U> expected(message: String) = { next: Sequence<T> -> ExpectedResult<T, U>(message, next) }
 fun <T> any(l: Sequence<T>) = if (l.any()) SuccessResult(l.first(), l.drop(1)) else UnexpectedResult("EOS", l)
 // end of sequence
 fun <T> eos(l: Sequence<T>) = if (l.any()) ExpectedResult("EOS", l) else SuccessResult(EosObject, l)
