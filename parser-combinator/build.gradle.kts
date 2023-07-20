@@ -1,18 +1,57 @@
 plugins {
-    // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
-    kotlin("jvm") version "1.9.0"
-
-    // Apply the java-library plugin for API and implementation separation.
     `java-library`
+    `maven-publish`
 }
 
-dependencies {
-    implementation(platform(libs.kotlin.bom))
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+description = "Yet Another Kotlin Parser library"
 
-    testImplementation(platform(libs.junit.bom))
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
     testImplementation("org.junit.jupiter:junit-jupiter-engine")
-    // Use the Kotlin JUnit 5 integration.
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.jar {
+    manifest {
+        attributes(
+            "Created-By" to "${System.getProperties()["java.version"]} (${System.getProperties()["java.vendor"]} ${System.getProperties()["java.vm.version"]})",
+            "Implementation-Title" to project.description,
+            "Implementation-Version" to project.version
+        )
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifactId = "parser-combinators"
+            from(components["java"])
+            pom {
+                name.set("Kotlin PEG")
+                description.set(project.description)
+                url.set("https://github.com/ktakashi/kotlin-peg")
+                properties.set(mapOf(
+                    // TODO put kotlin version
+                ))
+                licenses {
+                    license {
+                        name.set("The Apache License, Version 2.0")
+                        url.set("https://www.apache.org/licenses/LICENSE-2.0.txt")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("ktakashi")
+                        name.set("Takashi Kato")
+                        email.set("ktakashi@ymail.com")
+                    }
+                }
+                scm {
+                    connection.set("scm:git:https://github.com/ktakashi/kotlin-peg")
+                    url.set("https://github.com/ktakashi/kotlin-peg")
+                }
+            }
+        }
+    }
 }
