@@ -108,12 +108,6 @@ fun <T, U0, U1> bind(p: Parser<T, U0>, f0: Binder<T, U0, U1>) = { l: Sequence<T>
         else -> ExpectedResult("$p is expected", l)
     }
 }
-fun <T, U0, U1, U2> bind(p: Parser<T, U0>, f0: Binder<T, U0, U1>, f1: Binder<T, U1, U2>) = { l: Sequence<T> ->
-    when (val r = bind(p, f0)(l)) {
-        is SuccessResult<T, U1> -> f1(r.value)(r.next)
-        else -> ExpectedResult("$f0 is expected", l)
-    }
-}
 
 fun <T, U : Any> optional(parser: Parser<T, U>) =
     bind(many(parser, 0, 1)) { v ->
@@ -123,6 +117,24 @@ fun <T, U : Any> optional(parser: Parser<T, U>) =
             result(Optional.of(v[0]))
         }
     }
+
+fun <T, U> repeat(parser: Parser<T, U>, count: Int) = many(parser, atLeast = count, atMost = count)
+
+fun <T, U> peek(parser: Parser<T, U>) = { l: Sequence<T> ->
+    when (val r = parser(l)) {
+        is SuccessResult<T, U> -> SuccessResult(r.value, l)
+        else -> r
+    }
+}
+
+fun <T, U> not(parser: Parser<T, U>) = peek(parser).let { p ->
+    { l: Sequence<T> ->
+        when (val r = p(l)) {
+            is SuccessResult<T, U> -> UnexpectedResult("Not $parser is expected", r.next)
+            else -> SuccessResult(l.first(), l)
+        }
+    }
+}
 
 fun <T, U> debug(parser: Parser<T, U>, consumer: (Result<T, U>) -> Unit = ::println) = { l: Sequence<T> ->
     val r = parser(l)
