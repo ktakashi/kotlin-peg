@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm") version "1.9.0"
+    id("org.jetbrains.dokka") version "1.8.20"
     id("io.spring.dependency-management") version "1.1.2"
 }
 
@@ -17,6 +18,7 @@ allprojects {
 subprojects {
     apply(plugin = "kotlin")
     apply(plugin = "io.spring.dependency-management")
+    apply(plugin = "org.jetbrains.dokka")
     kotlin {
         jvmToolchain(11)
     }

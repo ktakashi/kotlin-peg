@@ -39,8 +39,20 @@ private fun <T> asLazyNode(iterator: Iterator<T>) =
     }
 private fun <T> asLazyNode(sequence: Sequence<T>) = asLazyNode(sequence.iterator())
 
-
+/**
+ * Converts a [Reader] to sequence.
+ *
+ * The returning sequence can be reused multiple times.
+ * (Not [constrainOnce])
+ */
 fun Reader.asCharSequence(): Sequence<Char> = asLazyNode(this.buffered().let {
     generateSequence { it.read().toChar() }
 })
+
+/**
+ * Converts an [InputStream] to sequence.
+ *
+ * The returning sequence can be reused multiple times.
+ * (Not [constrainOnce])
+ */
 fun InputStream.asCharSequence() = InputStreamReader(this.buffered()).asCharSequence()

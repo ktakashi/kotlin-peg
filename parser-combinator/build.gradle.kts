@@ -12,6 +12,17 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+java {
+    withSourcesJar()
+}
+
+val dokkaHtml by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class)
+val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
+    dependsOn(dokkaHtml)
+    archiveClassifier.set("javadoc")
+    from(dokkaHtml.outputDirectory)
+}
+
 tasks.jar {
     manifest {
         attributes(
@@ -27,6 +38,7 @@ publishing {
         create<MavenPublication>("maven") {
             artifactId = "parser-combinators"
             from(components["java"])
+            artifact(javadocJar)
             pom {
                 name.set("Kotlin PEG")
                 description.set(project.description)
