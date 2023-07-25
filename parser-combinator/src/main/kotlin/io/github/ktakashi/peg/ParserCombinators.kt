@@ -4,59 +4,11 @@ package io.github.ktakashi.peg
 import java.util.Optional
 
 /**
- * Result interface.
- *
- * All the parsing result implement this interface.
- * The [next] property holds next input of the
- * result.
- */
-sealed interface Result<T, U> {
-    /**
-     * Holds the rest of the input.
-     * @property next
-     */
-    val next: Sequence<T>
-}
-
-/**
- * The successful result
- *
- * @property value the successful value
- * @property next next input
- */
-data class SuccessResult<T, U>(val value: U, override val next: Sequence<T>): Result<T, U>
-
-/**
- * Unsuccessful result.
- *
- * This class notifies the parser that given input does not contain
- * expected input.
- *
- * @property message some descriptive message
- * @property next next input
- */
-data class ExpectedResult<T, U>(val message: String, override val next: Sequence<T>): Result<T, U>
-
-/**
- * Unsuccessful result.
- *
- * This class notifies the parser that given input contains
- * unexpected input.
- *
- * @property message some descriptive message
- * @property next next input
- */
-data class UnexpectedResult<T, U>(val message: String, override val next: Sequence<T>): Result<T, U>
-
-/**
  * End-of-sequence (EOS) object.
  *
  * This object is only returned when [eos] parser is used.
  */
 object EosObject // special value, end-of-sequence object
-
-typealias Parser<T, U> = (l: Sequence<T>) -> Result<T, U>
-typealias Binder<T, U0, U1> = (v: U0) -> Parser<T, U1>
 
 /**
  * Returns [value] with [SuccessResult]
@@ -103,7 +55,7 @@ fun <T> satisfy(pred: (value: T) -> Boolean) = { l: Sequence<T> ->
 }
 
 /**
- * Returns a parser which accept input if it's equal to [value].
+ * Returns a parser which accepts input if it's equal to [value].
  *
  * This method is equivalent to
  * ```kotlin
@@ -116,7 +68,7 @@ fun <T> satisfy(pred: (value: T) -> Boolean) = { l: Sequence<T> ->
  */
 fun <T> eq(value: T) = satisfy { v: T -> v == value }
 /**
- * Returns a parser which accept input if it isn't equal to [value].
+ * Returns a parser which accepts input if it isn't equal to [value].
  *
  * This method is equivalent to
  * ```kotlin
@@ -128,6 +80,15 @@ fun <T> eq(value: T) = satisfy { v: T -> v == value }
  * @return A parser
  */
 fun <T> neq(value: T) = satisfy { v: T -> v != value }
+
+/**
+ * Returns a parser which accepts if the input is in the [values]
+ *
+ * @param values Expected values
+ * @return A parser
+ */
+fun <T> contains(vararg values: T) = satisfy { v: T -> values.contains(v) }
+fun <T> contains(values: Collection<T>) = satisfy { v: T -> values.contains(v) }
 
 /**
  * Makes a parser which tries to match multiple time to [parser].
@@ -283,27 +244,76 @@ fun <T, U> or(vararg pn: Parser<T, U>) = { l: Sequence<T> ->
 }
 
 /**
- * Bind the result of [parser] and applies [receiver].
+ * Bind the result of [parser] and applies to the [receiver].
  *
- * This parser is useful when the subsequent parser require
+ * This parser is useful when the subsequent parsers require
  * the result of the precedent parser.
  *
  * Example:
  * ```kotlin
- * bind(::any) { v1 ->
- *   bind(seq(eq(','), ::any)) { v2 ->
- *     result(listOf(v1, v2))
- *   }
- * }
+ * bind(::any) { v1 -> seq(eq(v1)) }
  * ```
  * @param parser A parser
  * @param receiver A function takes the result of [parser] and returna a parser
  * @return A parser
  */
-fun <T, U0, U1> bind(parser: Parser<T, U0>, receiver: Binder<T, U0, U1>) = { l: Sequence<T> ->
+fun <T, U0, U1> bind(parser: Parser<T, U0>, receiver: Binder1<T, U0, U1>) = { l: Sequence<T> ->
     when (val r = parser(l)) {
         is SuccessResult<T, U0> -> receiver(r.value)(r.next)
         else -> ExpectedResult("$parser is expected", l)
+    }
+}
+
+/**
+ * Binds the result of [p0] and [p1] and applies to the [receiver]
+ *
+ * Example:
+ * ```kotlin
+ * bind(::any, ::any) { v1, v2 -> result(listOf(v1, v2) }
+ * ```
+ */
+fun <T, U0, U1, U2> bind(p0: Parser<T, U0>, p1: Parser<T, U1>, receiver: Binder2<T, U0, U1, U2>) = { l: Sequence<T> ->
+    when (val r0 = p0(l)) {
+        is SuccessResult<T, U0> -> when (val r1 = p1(r0.next)) {
+            is SuccessResult<T, U1> -> receiver(r0.value, r1.value)(r1.next)
+            else -> ExpectedResult("$p1 is expected", l)
+        }
+        else -> ExpectedResult("$p0 is expected", l)
+    }
+}
+
+/**
+ * Binds the result of [p0], [p1] and [p2] and applies to the [receiver]
+ */
+fun <T, U0, U1, U2, U3> bind(p0: Parser<T, U0>, p1: Parser<T, U1>, p2: Parser<T, U2>, receiver: Binder3<T, U0, U1, U2, U3>) = { l: Sequence<T> ->
+    when (val r0 = p0(l)) {
+        is SuccessResult<T, U0> -> when (val r1 = p1(r0.next)) {
+            is SuccessResult<T, U1> -> when (val r2 = p2(r1.next)) {
+                is SuccessResult<T, U2> -> receiver(r0.value, r1.value, r2.value)(r2.next)
+                else -> ExpectedResult("$p2 is expected", l)
+            }
+            else -> ExpectedResult("$p1 is expected", l)
+        }
+        else -> ExpectedResult("$p0 is expected", l)
+    }
+}
+
+/**
+ * Binds the result of [p0], [p1], [p2] and [p3] and applies to the [receiver]
+ */
+fun <T, U0, U1, U2, U3, U4> bind(p0: Parser<T, U0>, p1: Parser<T, U1>, p2: Parser<T, U2>, p3: Parser<T, U3>, receiver: Binder4<T, U0, U1, U2, U3, U4>) = { l: Sequence<T> ->
+    when (val r0 = p0(l)) {
+        is SuccessResult<T, U0> -> when (val r1 = p1(r0.next)) {
+            is SuccessResult<T, U1> -> when (val r2 = p2(r1.next)) {
+                is SuccessResult<T, U2> -> when (val r3 = p3(r2.next)) {
+                    is SuccessResult<T, U3> -> receiver(r0.value, r1.value, r2.value, r3.value)(r3.next)
+                    else -> ExpectedResult("$p3 is expected", l)
+                }
+                else -> ExpectedResult("$p2 is expected", l)
+            }
+            else -> ExpectedResult("$p1 is expected", l)
+        }
+        else -> ExpectedResult("$p0 is expected", l)
     }
 }
 

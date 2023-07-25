@@ -15,32 +15,21 @@ class ExampleCsvTest {
         val crlf = seq(cr, lf)
         val comma = eq(',')
         val dquote = eq('"')
-        val textdata = satisfy { c: Char ->
-            c != '"' && c != ',' && Charsets.US_ASCII.newEncoder().canEncode(c) && !Character.isISOControl(c)
+        val textSet = "~!@#$%^&*()_+-=[]\\;<>/.?abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        val textdata = contains(textSet.toList())
+        val escaped = bind(dquote, many(or(textdata, comma, cr, lf, seq(dquote, dquote, result('"')))), dquote) { _, v, _ ->
+            result(v)
         }
-        val escaped = bind(seq(dquote, many(or(textdata, comma, cr, lf, seq(dquote, dquote, result('"')))))) { r ->
-            seq(dquote, result(r.joinToString("")))
-        }
-        val nonEscaped = bind(many(textdata)) { r -> result(r.joinToString("")) }
-        val field = or(escaped, nonEscaped)
+        val nonEscaped = many(textdata)
+        val field = bind(or(escaped, nonEscaped)) { v -> result(v.joinToString("")) }
         val name = field
-        val header = bind(name) { n ->
-            bind(many(seq(comma, name))) { ns ->
-                result(listOf(n) + ns)
-            }
-        }
-        val record = bind(field) { f ->
-            bind(many(seq(comma, field))) { fs ->
-                result(listOf(f) + fs)
-            }
-        }
-        val file = bind(optional(bind(debug(header)) { h ->
-            seq(crlf, result(h))
+        val header = bind(name, many(seq(comma, name))) { n, ns -> result(listOf(n) + ns) }
+        val record = bind(field, many(seq(comma, field))) { f, fs -> result(listOf(f) + fs) }
+        val file = bind(optional(bind(header, crlf) { h, _ ->
+            result(h)
         })) { hs ->
-            bind(record) { r ->
-                bind(many(seq(crlf, record))) { rs ->
-                    seq(optional(crlf), result(CsvFile(hs, listOf(r) + rs)))
-                }
+            bind(record, many(seq(crlf, record)), optional(crlf)) { r, rs, _ ->
+                result(CsvFile(hs, listOf(r) + rs))
             }
         }
 

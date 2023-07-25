@@ -33,28 +33,16 @@ class Parser(separator: Char = ',', parseHeader: Boolean = true) {
     private val nonEscaped = bind(many(textdata)) { r -> result(r.joinToString("")) }
     private val field = or(escaped, nonEscaped)
     private val name = field
-    private val header = bind(name) { n ->
-        bind(many(seq(comma, name))) { ns ->
-            result(listOf(n) + ns)
-        }
-    }
-    private val record = bind(field) { f ->
-        bind(many(seq(comma, field))) { fs ->
-            result(listOf(f) + fs)
-        }
-    }
+    private val header = bind(name, many(seq(comma, name))) { n, ns -> result(listOf(n) + ns)}
+    private val record = bind(field, many(seq(comma, field))) { f, fs -> result(listOf(f) + fs) }
     private val headerLine = if (parseHeader) {
         optional(bind(header) { h -> seq(crlf, result(h)) })
     } else {
         result(Optional.empty())
     }
 
-    private val file = bind(headerLine) { hs ->
-        bind(record) { r ->
-            bind(many(seq(crlf, record))) { rs ->
-                seq(debug(optional(crlf)), result(CsvFile(hs, listOf(r) + rs.dropLastWhile { it.size == 1 && it[0] == "" })))
-            }
-        }
+    private val file = bind(headerLine, record, many(seq(crlf, record))) { hs, r, rs ->
+        seq(debug(optional(crlf)), result(CsvFile(hs, listOf(r) + rs.dropLastWhile { it.size == 1 && it[0] == "" })))
     }
 
     fun parse(csvString: String) = parse(csvString.asSequence())
