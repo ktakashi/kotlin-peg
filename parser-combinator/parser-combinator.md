@@ -51,4 +51,11 @@ val file = bind(optional(bind(header, crlf) { h, _ ->
         result(h to listOf(r) + rs)
     }
 }
+
+// how to use
+when (val result = file("some,csv,record\r\nvery,simple,one".asSequence())) {
+    is SuccessResult -> result.value
+    else -> throw IllegalArgumentException("Invalid CSV")
+}
+
 ```
