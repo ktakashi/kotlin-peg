@@ -19,10 +19,17 @@ val dokkaHtml by tasks.getting(org.jetbrains.dokka.gradle.DokkaTask::class) {
         }
     }
 }
-val javadocJar: TaskProvider<Jar> by tasks.registering(Jar::class) {
-    dependsOn(dokkaHtml)
+
+tasks.register<Jar>("dokkaHtmlJar") {
+    dependsOn(tasks.dokkaHtml)
+    from(tasks.dokkaHtml.flatMap { it.outputDirectory })
+    archiveClassifier.set("html-docs")
+}
+
+tasks.register<Jar>("dokkaJavadocJar") {
+    dependsOn(tasks.dokkaJavadoc)
     archiveClassifier.set("javadoc")
-    from(dokkaHtml.outputDirectory)
+    from(tasks.dokkaJavadoc.flatMap { it.outputDirectory })
 }
 
 java {
@@ -44,7 +51,7 @@ publishing {
         create<MavenPublication>("maven") {
             artifactId = "parser-combinators"
             from(components["java"])
-            artifact(javadocJar)
+            artifact(tasks.getByName("dokkaJavadocJar"))
             pom {
                 name.set("Kotlin PEG")
                 description.set(project.description)
