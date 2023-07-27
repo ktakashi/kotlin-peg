@@ -46,7 +46,7 @@ jobs:
       - name: Compute keyId
         id: compute-key-id
         run: |
-          keyId=(gpg --list-keys --keyid-format short --with-colons | awk -F: '/^pub/ {print substr($5, 9, 16)}')
+          keyId=`gpg --list-keys --keyid-format short --with-colons | awk -F: '/^pub/ {print substr($5, 9, 16)}'`
           echo "GPG_KEY_ID=$keyId" >> "$GITHUB_OUTPUT"
       - name: Publish with Gradle
         uses: gradle/gradle-build-action@v2.7.0
