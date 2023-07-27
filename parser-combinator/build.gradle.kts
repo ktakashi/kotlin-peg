@@ -1,6 +1,7 @@
 plugins {
     `java-library`
     `maven-publish`
+    signing
 }
 
 description = "Yet Another Kotlin Parser library"
@@ -48,7 +49,7 @@ tasks.jar {
 
 publishing {
     publications {
-        create<MavenPublication>("maven") {
+        create<MavenPublication>("mavenJava") {
             artifactId = "parser-combinators"
             from(components["java"])
             artifact(tasks.getByName("dokkaJavadocJar"))
@@ -78,5 +79,27 @@ publishing {
                 }
             }
         }
+    }
+    repositories {
+        maven {
+            name = "sonatypeRepository"
+            val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
+            val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
+            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
+            credentials {
+                if (hasProperty("ossrhUsername")) {
+                    username = property("ossrhUsername") as String
+                }
+                if (hasProperty("ossrhPassword")) {
+                    password = property("ossrhPassword") as String
+                }
+            }
+        }
+    }
+}
+
+signing {
+    if (hasProperty("signing.keyId")) {
+        sign(publishing.publications["mavenJava"])
     }
 }
