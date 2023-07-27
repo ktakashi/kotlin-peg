@@ -43,12 +43,6 @@ jobs:
           gpg --version
           cat <(echo -e "${{ secrets.GPG_SECRET_KEY }}") | gpg --batch --import
           gpg --list-secret-keys --keyid-format=long
-      - name: Install secring.gpg
-        id: install-secring-gpg
-        run: |
-          if [ ! -f ~/.gnupg/secring.gpg ]; then
-            gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
-          fi
       - name: Compute keyId
         id: compute-key-id
         run: |
@@ -61,6 +55,6 @@ jobs:
             publish
             -Psigning.keyId=${{ steps.compute-key-id.GPG_KEY_ID }}
             -Psigning.password=${{ secrets.GPG_PASS_PHRASE }}
-            -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg
+            -Psigning.key=${{ secrets.GPG_SECRET_KEY }}
             -PossrhUsername=${{ secrets.OSSRHUSERNAME }}
             -PossrhPassword=${{ secrets.OSSRHPASSWORD }}

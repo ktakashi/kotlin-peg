@@ -100,6 +100,12 @@ publishing {
 
 signing {
     if (hasProperty("signing.keyId")) {
+        if (hasProperty("signing.key")) {
+            val keyId = property("signing.keyId") as String
+            val key = property("signing.key") as String
+            val password = property("signing.password") as String
+            useInMemoryPgpKeys(keyId, key, password)
+        }
         sign(publishing.publications["mavenJava"])
     }
 }
