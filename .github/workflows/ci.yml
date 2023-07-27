@@ -2,7 +2,7 @@ name: Java CI with Gradle
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "**" ]
   pull_request:
     branches: [ "main" ]
 
@@ -25,3 +25,38 @@ jobs:
       uses: gradle/gradle-build-action@v2.7.0
       with:
         arguments: build
+  publish:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Install GPG secret key
+        id: install-secret-key
+        run: |
+          cat <(echo -e "${{ secrets.GPG_SECRET_KEY }}") | gpg --batch --import
+          gpg --list-secret-keys --keyid-format=long
+      - name: Install secring.gpg
+        id: install-secring-gpg
+        run: |
+          gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
+      - name: Compute keyId
+        id: compute-key-id
+        run: |
+          keyId=(gpg --list-keys --keyid-format short --with-colons | awk -F: '/^pub/ {print substr($5, 9, 16)}')
+          echo "GPG_KEY_ID=$keyId" >> "$GITHUB_OUTPUT"
+      - name: Publish with Gradle
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          arguments: |
+            publish
+            -Psigning.keyId=${{ steps.compute-key-id.GPG_KEY_ID }}
+            -Psigning.password=${{ secret.GPG_PASS_PHRASE }}
+            -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg
+            -PossrhUsername=${{ secret.OSSRHUSERNAME }}
+            -PossrhPassword=${{ secret.OSSRHPASSWORD }}
