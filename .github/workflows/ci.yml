@@ -56,7 +56,7 @@ jobs:
           arguments: |
             publish
             -Psigning.keyId=${{ steps.compute-key-id.GPG_KEY_ID }}
-            -Psigning.password=${{ secret.GPG_PASS_PHRASE }}
+            -Psigning.password=${{ secrets.GPG_PASS_PHRASE }}
             -Psigning.secretKeyRingFile=${{ github.workspace }}/.gnupg/secring.gpg
-            -PossrhUsername=${{ secret.OSSRHUSERNAME }}
-            -PossrhPassword=${{ secret.OSSRHPASSWORD }}
+            -PossrhUsername=${{ secrets.OSSRHUSERNAME }}
+            -PossrhPassword=${{ secrets.OSSRHPASSWORD }}
