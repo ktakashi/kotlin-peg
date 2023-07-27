@@ -26,6 +26,7 @@ jobs:
       with:
         arguments: build
   publish:
+    needs: [ build ]
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
 
@@ -39,12 +40,15 @@ jobs:
       - name: Install GPG secret key
         id: install-secret-key
         run: |
+          gpg --version
           cat <(echo -e "${{ secrets.GPG_SECRET_KEY }}") | gpg --batch --import
           gpg --list-secret-keys --keyid-format=long
       - name: Install secring.gpg
         id: install-secring-gpg
         run: |
-          gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
+          if [ ! -f ~/.gnupg/secring.gpg ]; then
+            gpg --keyring secring.gpg --export-secret-keys > ~/.gnupg/secring.gpg
+          fi
       - name: Compute keyId
         id: compute-key-id
         run: |
