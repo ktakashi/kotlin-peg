@@ -55,7 +55,7 @@ jobs:
         with:
           arguments: |
             publish
-            -Psigning.keyId="${{ steps.compute-key-id.GPG_KEY_ID }}"
+            -Psigning.keyId="${{ steps.compute-key-id.outputs.GPG_KEY_ID }}"
             -Psigning.password="${{ secrets.GPG_PASS_PHRASE }}"
             -Psigning.key="${{ secrets.GPG_SECRET_KEY }}"
             -PossrhUsername="${{ secrets.OSSRHUSERNAME }}"
