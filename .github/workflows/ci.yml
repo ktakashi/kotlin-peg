@@ -54,7 +54,7 @@ jobs:
         uses: gradle/gradle-build-action@v2.7.0
         with:
           arguments: |
-            publish
+            publish --debug --stacktrace
             -Psigning.keyId="${{ steps.compute-key-id.outputs.GPG_KEY_ID }}"
             -Psigning.password="${{ secrets.GPG_PASS_PHRASE }}"
             -Psigning.key="${{ secrets.GPG_SECRET_KEY }}"
