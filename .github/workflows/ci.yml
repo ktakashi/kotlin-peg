@@ -57,6 +57,6 @@ jobs:
             publish
             -Psigning.keyId="${{ steps.compute-key-id.outputs.GPG_KEY_ID }}"
             -Psigning.password="${{ secrets.GPG_PASS_PHRASE }}"
-            -Psigning.key="`echo -e ${{ secrets.GPG_SECRET_KEY }}`"
+            -Psigning.key="`echo -e '${{ secrets.GPG_SECRET_KEY }}'`"
             -PossrhUsername="${{ secrets.OSSRHUSERNAME }}"
             -PossrhPassword="${{ secrets.OSSRHPASSWORD }}"
