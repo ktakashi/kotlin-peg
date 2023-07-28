@@ -50,13 +50,15 @@ jobs:
           keyId=`gpg --list-keys --keyid-format short --with-colons | awk -F: '/^pub/ {print substr($5, 9, 16)}'`
           echo $keyId
           echo "GPG_KEY_ID=$keyId" >> "$GITHUB_OUTPUT"
+      - name: Setup gradle.priperties
+        run: |
+          echo >> gradle.properties
+          echo "signing.keyId=${{ steps.compute-key-id.outputs.GPG_KEY_ID }}" >> gradle.properties
+          echo "signing.password=${{ secrets.GPG_PASS_PHRASE }}" >> gradle.properties
+          echo "signing.key=${{ secrets.GPG_SECRET_KEY }}" >> gradle.properties
+          echo "ossrhUsername=${{ secrets.OSSRHUSERNAME }}" >> gradle.properties
+          echo "ossrhPassword=${{ secrets.OSSRHPASSWORD }}" >> gradle.properties
       - name: Publish with Gradle
         uses: gradle/gradle-build-action@v2.7.0
         with:
-          arguments: |
-            publish --stacktrace --scan
-            -Psigning.keyId=${{ steps.compute-key-id.outputs.GPG_KEY_ID }}
-            -Psigning.password="${{ secrets.GPG_PASS_PHRASE }}"
-            -Psigning.key="${{ secrets.GPG_SECRET_KEY }}"
-            -PossrhUsername="${{ secrets.OSSRHUSERNAME }}"
-            -PossrhPassword="${{ secrets.OSSRHPASSWORD }}"
+          arguments: publish --stacktrace --scan
