@@ -1,0 +1,56 @@
+on:
+  workflow_call:
+    inputs:
+      version:
+        required: false
+        type: string
+    secrets:
+      password:
+        required: true
+      key:
+        required: true
+      mavenUsername:
+        required: false
+      mavenPassword:
+        required: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+      - name: Install GPG secret key
+        id: install-secret-key
+        run: |
+          gpg --version
+          cat <(echo -e "${{ secrets.key }}") | gpg --batch --import
+          gpg --list-secret-keys --keyid-format=long
+          gpg --list-keys --keyid-format=long
+      - name: Compute keyId
+        id: compute-key-id
+        run: |
+          keyId=`gpg --list-keys --keyid-format short --with-colons | awk -F: '/^pub/ {print substr($5, 9, 16)}'`
+          echo $keyId
+          echo "GPG_KEY_ID=$keyId" >> "$GITHUB_OUTPUT"
+      - name: Setup gradle.priperties
+        run: |
+          echo >> gradle.properties
+          echo "signing.keyId=${{ steps.compute-key-id.outputs.GPG_KEY_ID }}" >> gradle.properties
+          echo "signing.password=${{ secrets.password }}" >> gradle.properties
+          echo "signing.key=${{ secrets.key }}" >> gradle.properties
+          echo "ossrhUsername=${{ secrets.mavenUsername }}" >> gradle.properties
+          echo "ossrhPassword=${{ secrets.mavenPassword }}" >> gradle.properties
+      - name: Setup version property
+        id: setup_library_version
+        if: ${{ inputs.version }} != ""
+        run: |
+          echo "-Pversion=${{ inputs.version }}" >> $GITHUB_OUTPUT
+      - name: Publish with Gradle
+        uses: gradle/gradle-build-action@v2.7.0
+        with:
+          arguments: publish ${{ steps.setup_library_version.outputs.version }}
