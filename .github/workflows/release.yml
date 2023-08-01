@@ -1,0 +1,29 @@
+on:
+  push:
+    tags:
+      - '**'
+
+permissions:
+  contents: write
+
+jobs:
+  precheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check version
+        run: |
+          currentVersion=`cat gradle.properties | grep 'version' | sed -E 's/version=([0-9.]+)-SNAPSHOT/\1/'`
+          if [ ! "$currentVersion" = "${{ github.ref_name }}" ]; then
+            echo "Version mismatch: expected '$currentVersion' but got '${{ github.ref_name }}'"
+            exit 1
+          fi
+  release:
+    needs: [ precheck ]
+    uses: ./.github/workflows/publish.yml
+    secrets:
+      password: ${{ secrets.GPG_PASS_PHRASE }}
+      key: ${{ secrets.GPG_SECRET_KEY }}
+      mavenUsername: ${{ secrets.OSSRHUSERNAME }}
+      mavenPassword: ${{ secrets.OSSRHPASSWORD }}
+      version: ${{ github.ref_name }}
+          
