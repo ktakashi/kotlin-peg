@@ -10,6 +10,7 @@ jobs:
   precheck:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Check version
         run: |
           currentVersion=`cat gradle.properties | grep 'version' | sed -E 's/version=([0-9.]+)-SNAPSHOT/\1/'`
