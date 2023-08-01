@@ -49,8 +49,9 @@ jobs:
         id: setup_library_version
         if: ${{ inputs.version }} != ""
         run: |
-          echo "-Pversion=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          content=`cat gradle.properties | sed -E 's/version=.+/version=${{ inputs.version }}/`
+          echo "$content" > gradle.properties
       - name: Publish with Gradle
         uses: gradle/gradle-build-action@v2.7.0
         with:
-          arguments: publish ${{ steps.setup_library_version.outputs.version }}
+          arguments: publish --scan

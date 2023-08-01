@@ -24,7 +24,7 @@ jobs:
     - name: Build with Gradle
       uses: gradle/gradle-build-action@v2.7.0
       with:
-        arguments: build
+        arguments: build --scan
   publish:
     needs: [ build ]
     if: ${{ github.ref == 'refs/heads/main' }}
