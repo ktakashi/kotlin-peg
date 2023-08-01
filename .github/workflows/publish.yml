@@ -46,7 +46,7 @@ jobs:
           echo "ossrhUsername=${{ secrets.mavenUsername }}" >> gradle.properties
           echo "ossrhPassword=${{ secrets.mavenPassword }}" >> gradle.properties
       - name: Setup version property
-        if: inputs.version != ""
+        if: inputs.version != ''
         run: |
           content=`cat gradle.properties | sed -E 's/version=.+/version=${{ inputs.version }}/'`
           echo "$content" > gradle.properties
