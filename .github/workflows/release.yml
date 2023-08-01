@@ -25,5 +25,6 @@ jobs:
       key: ${{ secrets.GPG_SECRET_KEY }}
       mavenUsername: ${{ secrets.OSSRHUSERNAME }}
       mavenPassword: ${{ secrets.OSSRHPASSWORD }}
+    with:
       version: ${{ github.ref_name }}
           
