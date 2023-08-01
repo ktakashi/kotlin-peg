@@ -46,10 +46,9 @@ jobs:
           echo "ossrhUsername=${{ secrets.mavenUsername }}" >> gradle.properties
           echo "ossrhPassword=${{ secrets.mavenPassword }}" >> gradle.properties
       - name: Setup version property
-        id: setup_library_version
-        if: ${{ inputs.version }} != ""
+        if: inputs.version != ""
         run: |
-          content=`cat gradle.properties | sed -E 's/version=.+/version=${{ inputs.version }}/`
+          content=`cat gradle.properties | sed -E 's/version=.+/version=${{ inputs.version }}/'`
           echo "$content" > gradle.properties
       - name: Publish with Gradle
         uses: gradle/gradle-build-action@v2.7.0
