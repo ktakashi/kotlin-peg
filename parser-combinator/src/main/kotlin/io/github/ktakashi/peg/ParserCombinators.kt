@@ -318,6 +318,28 @@ fun <T, U0, U1, U2, U3, U4> bind(p0: Parser<T, U0>, p1: Parser<T, U1>, p2: Parse
 }
 
 /**
+ * Binds the result of [p0], [p1], [p2], [p3] and [p4] and applies to the [receiver]
+ */
+fun <T, U0, U1, U2, U3, U4, U5> bind(p0: Parser<T, U0>, p1: Parser<T, U1>, p2: Parser<T, U2>, p3: Parser<T, U3>, p4: Parser<T, U4>, receiver: Binder5<T, U0, U1, U2, U3, U4, U5>) = { l: Sequence<T> ->
+    when (val r0 = p0(l)) {
+        is SuccessResult<T, U0> -> when (val r1 = p1(r0.next)) {
+            is SuccessResult<T, U1> -> when (val r2 = p2(r1.next)) {
+                is SuccessResult<T, U2> -> when (val r3 = p3(r2.next)) {
+                    is SuccessResult<T, U3> -> when (val r4 = p4(r3.next)) {
+                        is SuccessResult -> receiver(r0.value, r1.value, r2.value, r3.value, r4.value)(r4.next)
+                        else -> ExpectedResult("$p4 is expected", l)
+                    }
+                    else -> ExpectedResult("$p3 is expected", l)
+                }
+                else -> ExpectedResult("$p2 is expected", l)
+            }
+            else -> ExpectedResult("$p1 is expected", l)
+        }
+        else -> ExpectedResult("$p0 is expected", l)
+    }
+}
+
+/**
  * Optional.
  *
  * The result of this parser returns [java.util.Optional].
@@ -382,6 +404,19 @@ fun <T, U> not(parser: Parser<T, U>) = peek(parser).let { p ->
         }
     }
 }
+
+/**
+ * Utility for self-referencing parser.
+ *
+ * This can be useful when you want to write self referencing parser.
+ *
+ * ```kotlin
+ * private val parser: Parser<Char, Node> by lazy {
+ *   or(seq(eq(',', defer { parser })), eos)
+ * }
+ * ```
+ */
+fun <T, U> defer(supplier: () -> Parser<T, U>) = { l : Sequence<T> -> supplier()(l) }
 
 /**
  * Debugging parser

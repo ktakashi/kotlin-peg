@@ -6,6 +6,7 @@ typealias Binder1<T, U0, U1> = (v: U0) -> Parser<T, U1>
 typealias Binder2<T, U0, U1, U2> = (v1: U0, v2: U1) -> Parser<T, U2>
 typealias Binder3<T, U0, U1, U2, U3> = (v1: U0, v2: U1, v3: U2) -> Parser<T, U3>
 typealias Binder4<T, U0, U1, U2, U3, U4> = (v1: U0, v2: U1, v3: U2, v4: U3) -> Parser<T, U4>
+typealias Binder5<T, U0, U1, U2, U3, U4, U5> = (v1: U0, v2: U1, v3: U2, v4: U3, v5: U4) -> Parser<T, U5>
 
 
 /**
