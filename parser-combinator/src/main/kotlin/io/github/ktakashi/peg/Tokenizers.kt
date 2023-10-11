@@ -10,7 +10,7 @@ private data object NilNode: Node<Any> {
     override fun iterator(): Iterator<Any> = emptySequence<Any>().iterator()
 }
 private class LazyNode<T>(val value: T, private val iterator: Iterator<T>): Node<T> {
-    val next = lazy { asLazyNode(iterator) }
+    val next by lazy { asLazyNode(iterator) }
 
     override fun iterator(): Iterator<T> = LazyNodeIterator(this)
 
@@ -22,7 +22,7 @@ private class LazyNode<T>(val value: T, private val iterator: Iterator<T>): Node
                 is LazyNode<T> -> {
                     val lazyNode = node as LazyNode<T>
                     val r = lazyNode.value
-                    node = lazyNode.next.value
+                    node = lazyNode.next
                     r
                 }
                 else -> throw NoSuchElementException("No next")
