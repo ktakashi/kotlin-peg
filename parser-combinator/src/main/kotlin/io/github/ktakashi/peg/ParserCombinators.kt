@@ -16,6 +16,13 @@ object EosObject // special value, end-of-sequence object
  * @param value The value to be returned
  */
 fun <T, U> result(value: U) = { next: Sequence<T> -> SuccessResult(value, next) }
+
+/**
+ * Invoke [action] and returns the result as [SuccessResult]
+ *
+ * @param action The value provider
+ */
+fun <T, U> result(action: () -> U) = { next: Sequence<T> -> SuccessResult(action(), next) }
 fun <T, U> expected(message: String) = { next: Sequence<T> -> ExpectedResult<T, U>(message, next) }
 
 /**
