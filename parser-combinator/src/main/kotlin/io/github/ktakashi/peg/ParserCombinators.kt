@@ -261,7 +261,7 @@ fun <T, U> or(vararg pn: Parser<T, U>) = { l: Sequence<T> ->
  * bind(::any) { v1 -> seq(eq(v1)) }
  * ```
  * @param parser A parser
- * @param receiver A function takes the result of [parser] and returna a parser
+ * @param receiver A function takes the result of [parser] and return a parser
  * @return A parser
  */
 fun <T, U0, U1> bind(parser: Parser<T, U0>, receiver: Binder1<T, U0, U1>) = { l: Sequence<T> ->
