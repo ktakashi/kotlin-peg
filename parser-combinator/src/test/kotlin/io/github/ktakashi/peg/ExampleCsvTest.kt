@@ -12,7 +12,7 @@ class ExampleCsvTest {
         // ANBF from https://datatracker.ietf.org/doc/html/rfc4180
         val cr = eq('\r')
         val lf = eq('\n')
-        val crlf = seq(cr, lf)
+        val crlf = token('\r', '\n') { "\r\n" }
         val comma = eq(',')
         val dquote = eq('"')
         val textSet = "~!@#$%^&*()_+-=[]\\;<>/.?abcdefghijklmnopqrstuvwxyz ABCDEFGHIJKLMNOPQRSTUVWXYZ"

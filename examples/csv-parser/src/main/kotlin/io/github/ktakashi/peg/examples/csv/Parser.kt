@@ -5,7 +5,6 @@ import io.github.ktakashi.peg.asCharSequence
 import io.github.ktakashi.peg.bind
 import io.github.ktakashi.peg.debug
 import io.github.ktakashi.peg.eq
-import io.github.ktakashi.peg.expected
 import io.github.ktakashi.peg.many
 import io.github.ktakashi.peg.optional
 import io.github.ktakashi.peg.or

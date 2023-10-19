@@ -89,6 +89,28 @@ fun <T> eq(value: T) = satisfy { v: T -> v == value }
 fun <T> neq(value: T) = satisfy { v: T -> v != value }
 
 /**
+ * Returns a parser which accepts input if it's sequence of the [values].
+ */
+fun <T> token(vararg values: T) = token(values.asSequence())
+
+/**
+ * Returns a parser which accepts input if it's sequence of the [values].
+ */
+fun <T> token(values: Sequence<T>) = values.map { eq(it) }
+    .reduce { acc, v ->
+        seq(acc, v)
+    }
+
+/**
+ * Returns a parser which accepts input and returns [action]'s value if it's sequence of the [values].
+ */
+fun <T, U> token(vararg values: T, action: () -> U) = token(values.asSequence(), action)
+/**
+ * Returns a parser which accepts input and returns [action]'s value if it's sequence of the [values].
+ */
+fun <T, U> token(values: Sequence<T>, action: () -> U) = seq(token(values), result(action))
+
+/**
  * Returns a parser which accepts if the input is in the [values]
  *
  * @param values Expected values

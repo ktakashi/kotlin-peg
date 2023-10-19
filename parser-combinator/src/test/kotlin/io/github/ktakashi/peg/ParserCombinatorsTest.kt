@@ -4,6 +4,7 @@ import java.util.Optional
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.jupiter.api.Assertions.assertFalse
 
 class ParserCombinatorsTest {
     @Test
@@ -69,5 +70,22 @@ class ParserCombinatorsTest {
         val r1 = optional(eq('a'))(sequence)
         assertTrue(r1 is SuccessResult<Char, Optional<Char>>)
         assertEquals(Optional.of('a'), r1.value)
+    }
+
+    @Test
+    fun token() {
+        val sequence = "token".asSequence()
+        val r = token(sequence)("token is here".asSequence())
+        assertTrue(r is SuccessResult)
+        assertEquals(" is here", r.next.joinToString(""))
+    }
+
+    @Test
+    fun token2() {
+        val sequence = "token".asSequence()
+        val r = token(sequence) { "token" }("token is here".asSequence())
+        assertTrue(r is SuccessResult)
+        assertEquals("token", r.value)
+        assertEquals(" is here", r.next.joinToString(""))
     }
 }
